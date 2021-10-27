@@ -1,0 +1,6 @@
+# Object files
+/obj/
+# Dependency files
+/dep/
+# Compiled executable
+/lots
