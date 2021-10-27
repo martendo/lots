@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <err.h>
 #include <getopt.h>
 
 #define LOTS_VERSION "0.0.0"
 #define LOTS_HOME_PAGE "lots home page: <https://github.com/martendo/lots>"
+
+#define BUFFER_SIZE 1024
 
 static const char *const optstring = "hv";
 
@@ -41,6 +45,26 @@ int main(int argc, char *const argv[]) {
 				fputs("Try 'lots --help' for more information.\n", stderr);
 				return 1;
 		}
+	}
+	// Quit if there are no input files
+	if (optind == argc)
+		errx(1, "No input files given");
+
+	// stdout is not a terminal -> simply copy all files
+	if (!isatty(STDOUT_FILENO)) {
+		do {
+			char *const filename = argv[optind];
+			FILE *file = fopen(filename, "r");
+			if (!file)
+				err(1, "Could not open \"%s\"", filename);
+
+			char buffer[BUFFER_SIZE];
+			size_t size;
+			while ((size = fread(&buffer, sizeof(char), sizeof(buffer), file)) > 0)
+				fwrite(&buffer, sizeof(char), size, stdout);
+			fclose(file);
+		} while (++optind < argc);
+		return 0;
 	}
 	return 0;
 }
