@@ -6,8 +6,7 @@
 
 enum cmd getcmd(void) {
 	char inbuf[8] = {0};
-	ssize_t inlen, i;
-	inlen = read(STDERR_FILENO, &inbuf, sizeof(inbuf));
+	const ssize_t inlen = read(STDERR_FILENO, &inbuf, sizeof(inbuf));
 	if (inlen < 0)
 		return CMD_UNKNOWN;
 	// ANSI escape sequence
@@ -25,7 +24,7 @@ enum cmd getcmd(void) {
 		return CMD_UNKNOWN;
 	}
 	// Command
-	for (i = 0; i < inlen; i++) {
+	for (ssize_t i = 0; i < inlen; i++) {
 		switch (inbuf[i]) {
 			case 'q':
 			case 'Q':

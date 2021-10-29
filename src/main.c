@@ -22,7 +22,7 @@ static const struct option longopts[] = {
 	{NULL, 0, NULL, 0}
 };
 
-int main(int argc, char *const argv[]) {
+int main(const int argc, char *const argv[]) {
 	// Get options
 	int option;
 	while ((option = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
@@ -59,7 +59,7 @@ int main(int argc, char *const argv[]) {
 	// stdout is not a terminal -> simply copy all files
 	if (!isatty(STDOUT_FILENO)) {
 		do {
-			char *const filename = argv[optind];
+			const char *const filename = argv[optind];
 			FILE *file = fopen(filename, "r");
 			if (!file) {
 				warn("Could not open \"%s\"", filename);
@@ -80,7 +80,7 @@ int main(int argc, char *const argv[]) {
 	struct lotsctl ctl;
 
 	// stdout is a terminal -> get terminal window size
-	struct winsize win;
+	const struct winsize win;
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) < 0)
 		err(1, "Failed to get terminal window size");
 	ctl.lines = win.ws_row;

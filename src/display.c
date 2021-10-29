@@ -10,13 +10,13 @@
 #define TTY_RESET "\033[0m"
 #define TTY_INVERSE "\033[7m"
 
-void printStatus(struct lotsctl *const ctl) {
+void printStatus(const struct lotsctl *const ctl) {
 	unsigned int percent = ctl->filePos / ctl->fileSize * 100;
 	printf(TTY_INVERSE "%s (%u%%)" TTY_RESET, ctl->filename, percent);
 	fflush(stdout);
 }
 
-void displayFile(struct lotsctl *const ctl, char *const filename) {
+void displayFile(struct lotsctl *const ctl, const char *const filename) {
 	ctl->filename = filename;
 
 	// Open file
