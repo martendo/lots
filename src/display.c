@@ -19,27 +19,27 @@ void printStatus(struct lotsctl *const ctl) {
 void displayFile(struct lotsctl *const ctl, char *const filename) {
 	ctl->filename = filename;
 
-	// Get file information
-	struct stat st;
-	if (stat(ctl->filename, &st) < 0) {
-		warn("Could not stat file \"%s\"", ctl->filename);
-		return;
-	}
-
-	// Can't display directories
-	if (S_ISDIR(st.st_mode)) {
-		warnx("\"%s\": Is a directory", ctl->filename);
-		return;
-	}
-
-	ctl->fileSize = st.st_size;
-
 	// Open file
 	ctl->file = fopen(ctl->filename, "r");
 	if (!ctl->file) {
 		warn("Could not open \"%s\"", ctl->filename);
 		return;
 	}
+
+	// Get file information
+	struct stat st;
+	if (fstat(fileno(ctl->file), &st) < 0) {
+		warn("Could not stat file \"%s\"", ctl->filename);
+		return;
+	}
+
+	// Can't display directories
+	if (S_ISDIR(st.st_mode)) {
+		warnx("\"%s\" is a directory", ctl->filename);
+		return;
+	}
+
+	ctl->fileSize = st.st_size;
 
 	// Print screenful of content
 	char buffer[BUFFER_SIZE];

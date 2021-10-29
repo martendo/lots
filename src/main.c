@@ -70,6 +70,8 @@ int main(int argc, char *const argv[]) {
 			size_t size;
 			while ((size = fread(&buffer, sizeof(char), sizeof(buffer), file)) > 0)
 				fwrite(&buffer, sizeof(char), size, stdout);
+			if (ferror(file))
+				warn("Could not read \"%s\"", filename);
 			fclose(file);
 		} while (++optind < argc);
 		return 0;
