@@ -23,3 +23,8 @@ lots: $(patsubst src/%.c,obj/%.o,$(SRCS))
 obj/%.o dep/%.d: src/%.c
 	@mkdir -p obj/$(*D) dep/$(*D)
 	$(CC) $(CFLAGS) -MMD -MP -MQ obj/$*.o -MQ dep/$*.d -MF dep/$*.d -c $< -o obj/$*.o
+
+# Include dependencies except if cleaning
+ifneq ($(MAKECMDGOALS),clean)
+-include $(patsubst src/%.c,dep/%.d,$(SRCS))
+endif
