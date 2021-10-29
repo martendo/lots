@@ -22,7 +22,7 @@ lots: $(patsubst src/%.c,obj/%.o,$(SRCS))
 # Compile C source files to object files and create dependency files
 obj/%.o dep/%.d: src/%.c
 	@mkdir -p obj/$(*D) dep/$(*D)
-	$(CC) $(CFLAGS) -MMD -MP -MQ obj/$*.o -MQ dep/$*.d -MF dep/$*.d -c $< -o obj/$*.o
+	$(CC) $(CFLAGS) -I include -MMD -MP -MQ obj/$*.o -MQ dep/$*.d -MF dep/$*.d -c $< -o obj/$*.o
 
 # Include dependencies except if cleaning
 ifneq ($(MAKECMDGOALS),clean)

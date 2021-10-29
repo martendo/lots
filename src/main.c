@@ -4,12 +4,12 @@
 #include <err.h>
 #include <getopt.h>
 
+#include "cmd.h"
+
 #define LOTS_VERSION "0.0.0"
 #define LOTS_HOME_PAGE "lots home page: <https://github.com/martendo/lots>"
 
 #define BUFFER_SIZE 1024
-
-#define ESC '\033'
 
 static const char *const optstring = "hv";
 
@@ -83,47 +83,25 @@ int main(int argc, char *const argv[]) {
 	attr.c_cc[VTIME] = 0;
 	tcsetattr(STDERR_FILENO, TCSANOW, &attr);
 
-	char inbuf[8] = {0};
-	ssize_t inlen, i;
+	enum cmd command = CMD_UNKNOWN;
 	while (1) {
-		inlen = read(STDERR_FILENO, &inbuf, sizeof(inbuf));
-		if (inlen < 0)
-			continue;
-		// ANSI escape sequence
-		if (inbuf[0] == ESC && inlen >= 3) {
-			if (inbuf[1] != '[')
-				continue;
-			switch (inbuf[2]) {
-				// Up arrow: ^[[A
-				case 'A':
-					puts("up");
-					break;
-				// Down arrow: ^[[B
-				case 'B':
-					puts("down");
-					break;
-				// Right arrow: ^[[C
-				case 'C':
-					puts("right");
-					break;
-				// Left arrow: ^[[D
-				case 'D':
-					puts("left");
-					break;
-			}
-			continue;
-		}
-		// Command
-		for (i = 0; i < inlen; i++) {
-			switch (inbuf[i]) {
-				case 'q':
-					goto quit;
-			}
+		command = getcmd();
+		switch (command) {
+			case CMD_UNKNOWN:
+				break;
+			case CMD_UP:
+				puts("up");
+				break;
+			case CMD_DOWN:
+				puts("down");
+				break;
+			case CMD_QUIT:
+				goto quit;
 		}
 	}
 quit:
 	if (tcsetattr(STDERR_FILENO, TCSAFLUSH, &oldattr) < 0)
-		err(1, "Failed to set terminal attributes");
+		err(1, "Failed to reset terminal attributes");
 
 	return 0;
 }
