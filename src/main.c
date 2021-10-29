@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
+#include <sys/ioctl.h>
 #include <err.h>
 #include <getopt.h>
 
+#include "ctl.h"
 #include "cmd.h"
+#include "display.h"
 
 #define LOTS_VERSION "0.0.0"
 #define LOTS_HOME_PAGE "lots home page: <https://github.com/martendo/lots>"
@@ -70,7 +73,18 @@ int main(int argc, char *const argv[]) {
 		return 0;
 	}
 
-	// stdout is a terminal -> modify terminal attributes
+	struct lotsctl ctl;
+
+	// stdout is a terminal -> get terminal window size
+	struct winsize win;
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) < 0)
+		err(1, "Failed to get terminal window size");
+	ctl.lines = win.ws_row;
+
+	// Display first file
+	displayFile(&ctl, argv[optind++]);
+
+	// Modify terminal attributes
 	struct termios oldattr, attr;
 	if (tcgetattr(STDIN_FILENO, &oldattr) < 0 && tcgetattr(STDERR_FILENO, &oldattr) < 0)
 		err(1, "Failed to get terminal attributes");
