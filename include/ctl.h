@@ -1,6 +1,8 @@
 #ifndef LOTS_CTL_H
 #define LOTS_CTL_H
 
+#include <stdio.h>
+
 struct lotsctl {
 	unsigned short lines; // Number of lines in the terminal window
 	const char *filename; // Path to current file
