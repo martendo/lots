@@ -7,24 +7,35 @@
 
 #define BUFFER_SIZE 1024
 
+#define TTY_RESET "\033[0m"
+#define TTY_INVERSE "\033[7m"
+
+void printStatus(struct lotsctl *const ctl) {
+	unsigned int percent = ctl->filePos / ctl->fileSize * 100;
+	printf(TTY_INVERSE "%s (%u%%)" TTY_RESET, ctl->filename, percent);
+	fflush(stdout);
+}
+
 void displayFile(struct lotsctl *const ctl, char *const filename) {
+	ctl->filename = filename;
+
 	// Get file information
 	struct stat st;
-	if (stat(filename, &st) < 0)
-		err(1, "Could not stat file \"%s\"", filename);
+	if (stat(ctl->filename, &st) < 0)
+		err(1, "Could not stat file \"%s\"", ctl->filename);
 
 	// Can't display directories
 	if (S_ISDIR(st.st_mode)) {
-		warnx("\"%s\": Is a directory", filename);
+		warnx("\"%s\": Is a directory", ctl->filename);
 		return;
 	}
 
 	ctl->fileSize = st.st_size;
 
 	// Open file
-	ctl->file = fopen(filename, "r");
+	ctl->file = fopen(ctl->filename, "r");
 	if (!ctl->file)
-		err(1, "Could not open \"%s\"", filename);
+		err(1, "Could not open \"%s\"", ctl->filename);
 
 	// Print screenful of content
 	char buffer[BUFFER_SIZE];
@@ -38,4 +49,6 @@ void displayFile(struct lotsctl *const ctl, char *const filename) {
 		}
 	}
 	ctl->filePos = ftello(ctl->file);
+
+	printStatus(ctl);
 }

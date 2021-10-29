@@ -5,4 +5,6 @@
 
 void displayFile(struct lotsctl *const, char *const);
 
+void printStatus(struct lotsctl *const);
+
 #endif
