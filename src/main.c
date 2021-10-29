@@ -61,8 +61,10 @@ int main(int argc, char *const argv[]) {
 		do {
 			char *const filename = argv[optind];
 			FILE *file = fopen(filename, "r");
-			if (!file)
-				err(1, "Could not open \"%s\"", filename);
+			if (!file) {
+				warn("Could not open \"%s\"", filename);
+				continue;
+			}
 
 			char buffer[BUFFER_SIZE];
 			size_t size;

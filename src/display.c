@@ -21,8 +21,10 @@ void displayFile(struct lotsctl *const ctl, char *const filename) {
 
 	// Get file information
 	struct stat st;
-	if (stat(ctl->filename, &st) < 0)
-		err(1, "Could not stat file \"%s\"", ctl->filename);
+	if (stat(ctl->filename, &st) < 0) {
+		warn("Could not stat file \"%s\"", ctl->filename);
+		return;
+	}
 
 	// Can't display directories
 	if (S_ISDIR(st.st_mode)) {
@@ -34,8 +36,10 @@ void displayFile(struct lotsctl *const ctl, char *const filename) {
 
 	// Open file
 	ctl->file = fopen(ctl->filename, "r");
-	if (!ctl->file)
-		err(1, "Could not open \"%s\"", ctl->filename);
+	if (!ctl->file) {
+		warn("Could not open \"%s\"", ctl->filename);
+		return;
+	}
 
 	// Print screenful of content
 	char buffer[BUFFER_SIZE];
