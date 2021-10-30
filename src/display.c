@@ -10,13 +10,16 @@
 
 void print_status(const struct lotsctl *const ctl) {
 	unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
-	printf("%s%s line %u (%u%%)%s", enter_reverse_mode, ctl->filename, ctl->line, percent, exit_attribute_mode);
+	putp(enter_reverse_mode);
+	printf("%s line %u (%u%%)", ctl->filename, ctl->line, percent);
+	putp(exit_attribute_mode);
 	fflush(stdout);
 }
 
 void move_forwards(struct lotsctl *const ctl, int nlines) {
 	// Clear status
-	printf("\r%s", clr_eol);
+	putchar('\r');
+	putp(clr_eol);
 
 	// Print nlines lines from file
 	char buffer[BUFFER_SIZE];
