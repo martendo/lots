@@ -25,6 +25,7 @@ void move_forwards(struct lotsctl *const ctl, int nlines) {
 	char buffer[BUFFER_SIZE];
 	while (fgets(buffer, sizeof(buffer), ctl->file)) {
 		fputs(buffer, stdout);
+		putp(clr_eol);
 		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
 			ctl->line++;
 			if (--nlines <= 0)
@@ -54,6 +55,7 @@ void move_backwards(struct lotsctl *const ctl, int nlines) {
 		ctl->line = 0;
 	}
 	// Print screenful of content at new position
+	putp(cursor_home);
 	move_forwards(ctl, lines - 1);
 }
 
