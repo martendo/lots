@@ -83,6 +83,9 @@ int main(const int argc, char *const argv[]) {
 	setupterm(NULL, STDOUT_FILENO, NULL);
 	ctl.key_up_len = strlen(key_up);
 	ctl.key_down_len = strlen(key_down);
+	ctl.key_ppage_len = strlen(key_ppage);
+	ctl.key_npage_len = strlen(key_npage);
+	ctl.key_home_len = strlen(key_home);
 
 	// Display first file
 	display_file(&ctl, argv[optind++]);
@@ -106,12 +109,28 @@ int main(const int argc, char *const argv[]) {
 		switch (command) {
 			case CMD_UNKNOWN:
 				break;
-			case CMD_UP:
-				move_backwards(&ctl, 1);
-				break;
+			// Move forwards 1 line
 			case CMD_DOWN:
 				move_forwards(&ctl, 1);
 				break;
+			// Move backwards 1 line
+			case CMD_UP:
+				move_backwards(&ctl, 1);
+				break;
+			// Jump to beginning of file
+			case CMD_HOME:
+				fseeko(ctl.file, 0, SEEK_SET);
+				ctl.line = 0;
+				// Fall-through
+			// Move forwards 1 page
+			case CMD_DOWN_PAGE:
+				move_forwards(&ctl, lines - 1);
+				break;
+			// Move backwards 1 page
+			case CMD_UP_PAGE:
+				move_backwards(&ctl, lines - 1);
+				break;
+			// Exit lots
 			case CMD_QUIT:
 				goto quit;
 		}

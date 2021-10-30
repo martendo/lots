@@ -12,6 +12,9 @@ struct lotsctl {
 
 	size_t key_up_len; // strlen(key_up)
 	size_t key_down_len; // strlen(key_down)
+	size_t key_ppage_len; // strlen(key_ppage)
+	size_t key_npage_len; // strlen(key_npage)
+	size_t key_home_len; // strlen(key_home)
 };
 
 #endif
