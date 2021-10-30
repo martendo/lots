@@ -23,6 +23,7 @@ void move_forwards(struct lotsctl *const ctl, int nlines) {
 	while (fgets(buffer, sizeof(buffer), ctl->file)) {
 		fputs(buffer, stdout);
 		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
+			ctl->line++;
 			if (--nlines <= 0)
 				break;
 		}
@@ -31,6 +32,26 @@ void move_forwards(struct lotsctl *const ctl, int nlines) {
 
 	// Reprint status
 	print_status(ctl);
+}
+
+void move_backwards(struct lotsctl *const ctl, int nlines) {
+	// Seek to new position
+	fseeko(ctl->file, 0, SEEK_SET);
+	char buffer[BUFFER_SIZE];
+	nlines = ctl->line - (lines - 1) - nlines;
+	if (nlines > 0) {
+		ctl->line = nlines;
+		while (fgets(buffer, sizeof(buffer), ctl->file)) {
+			if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
+				if (--nlines <= 0)
+					break;
+			}
+		}
+	} else {
+		ctl->line = 0;
+	}
+	// Print screenful of content at new position
+	move_forwards(ctl, lines - 1);
 }
 
 void display_file(struct lotsctl *const ctl, const char *const filename) {
@@ -56,6 +77,7 @@ void display_file(struct lotsctl *const ctl, const char *const filename) {
 		return;
 	}
 
+	ctl->line = 0;
 	ctl->file_size = st.st_size;
 
 	// Print screenful of content

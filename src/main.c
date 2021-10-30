@@ -107,7 +107,7 @@ int main(const int argc, char *const argv[]) {
 			case CMD_UNKNOWN:
 				break;
 			case CMD_UP:
-				puts("up");
+				move_backwards(&ctl, 1);
 				break;
 			case CMD_DOWN:
 				move_forwards(&ctl, 1);
