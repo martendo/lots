@@ -110,7 +110,7 @@ int main(const int argc, char *const argv[]) {
 				puts("up");
 				break;
 			case CMD_DOWN:
-				puts("down");
+				move_forwards(&ctl, 1);
 				break;
 			case CMD_QUIT:
 				goto quit;

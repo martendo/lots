@@ -14,6 +14,25 @@ void print_status(const struct lotsctl *const ctl) {
 	fflush(stdout);
 }
 
+void move_forwards(struct lotsctl *const ctl, int nlines) {
+	// Clear status
+	printf("\r%s", clr_eol);
+
+	// Print nlines lines from file
+	char buffer[BUFFER_SIZE];
+	while (fgets(buffer, sizeof(buffer), ctl->file)) {
+		fputs(buffer, stdout);
+		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
+			if (--nlines <= 0)
+				break;
+		}
+	}
+	ctl->file_pos = ftello(ctl->file);
+
+	// Reprint status
+	print_status(ctl);
+}
+
 void display_file(struct lotsctl *const ctl, const char *const filename) {
 	ctl->filename = filename;
 
@@ -40,16 +59,5 @@ void display_file(struct lotsctl *const ctl, const char *const filename) {
 	ctl->file_size = st.st_size;
 
 	// Print screenful of content
-	char buffer[BUFFER_SIZE];
-	short plines = 0;
-	while (fgets(buffer, sizeof(buffer), ctl->file)) {
-		fputs(buffer, stdout);
-		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
-			if (++plines >= lines - 1)
-				break;
-		}
-	}
-	ctl->file_pos = ftello(ctl->file);
-
-	print_status(ctl);
+	move_forwards(ctl, lines - 1);
 }
