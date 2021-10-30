@@ -10,13 +10,13 @@
 #define TTY_RESET "\033[0m"
 #define TTY_INVERSE "\033[7m"
 
-void printStatus(const struct lotsctl *const ctl) {
-	unsigned int percent = ctl->filePos / ctl->fileSize * 100;
+void print_status(const struct lotsctl *const ctl) {
+	unsigned int percent = ctl->file_pos / ctl->file_size * 100;
 	printf(TTY_INVERSE "%s (%u%%)" TTY_RESET, ctl->filename, percent);
 	fflush(stdout);
 }
 
-void displayFile(struct lotsctl *const ctl, const char *const filename) {
+void display_file(struct lotsctl *const ctl, const char *const filename) {
 	ctl->filename = filename;
 
 	// Open file
@@ -39,7 +39,7 @@ void displayFile(struct lotsctl *const ctl, const char *const filename) {
 		return;
 	}
 
-	ctl->fileSize = st.st_size;
+	ctl->file_size = st.st_size;
 
 	// Print screenful of content
 	char buffer[BUFFER_SIZE];
@@ -52,7 +52,7 @@ void displayFile(struct lotsctl *const ctl, const char *const filename) {
 				break;
 		}
 	}
-	ctl->filePos = ftello(ctl->file);
+	ctl->file_pos = ftello(ctl->file);
 
-	printStatus(ctl);
+	print_status(ctl);
 }

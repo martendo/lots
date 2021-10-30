@@ -86,7 +86,7 @@ int main(const int argc, char *const argv[]) {
 	ctl.lines = win.ws_row;
 
 	// Display first file
-	displayFile(&ctl, argv[optind++]);
+	display_file(&ctl, argv[optind++]);
 
 	// Modify terminal attributes
 	struct termios oldattr, attr;

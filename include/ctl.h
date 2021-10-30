@@ -7,8 +7,8 @@ struct lotsctl {
 	unsigned short lines; // Number of lines in the terminal window
 	const char *filename; // Path to current file
 	FILE *file; // Pointer to the current file stream
-	off_t filePos; // Current position in current file
-	off_t fileSize; // Size of current file
+	off_t file_pos; // Current position in current file
+	off_t file_size; // Size of current file
 };
 
 #endif

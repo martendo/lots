@@ -3,8 +3,8 @@
 
 #include "ctl.h"
 
-void displayFile(struct lotsctl *const, const char *const);
+void display_file(struct lotsctl *const, const char *const);
 
-void printStatus(const struct lotsctl *const);
+void print_status(const struct lotsctl *const);
 
 #endif
