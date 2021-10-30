@@ -9,7 +9,7 @@
 #define BUFFER_SIZE 1024
 
 void print_status(const struct lotsctl *const ctl) {
-	unsigned int percent = ctl->file_pos / ctl->file_size * 100;
+	unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
 	printf("%s%s (%u%%)%s", enter_reverse_mode, ctl->filename, percent, exit_attribute_mode);
 	fflush(stdout);
 }
