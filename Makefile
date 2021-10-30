@@ -1,7 +1,7 @@
 .SUFFIXES:
 
 CFLAGS ?= -Wall -O3 -flto
-LDFLAGS ?=
+LDFLAGS ?= -lncurses
 
 SRCS = $(wildcard src/*.c)
 

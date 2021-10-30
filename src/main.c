@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <term.h>
 #include <termios.h>
-#include <sys/ioctl.h>
 #include <err.h>
 #include <getopt.h>
 
@@ -77,13 +78,11 @@ int main(const int argc, char *const argv[]) {
 		return 0;
 	}
 
+	// stdout is a terminal -> get terminal capabilities
 	struct lotsctl ctl;
-
-	// stdout is a terminal -> get terminal window size
-	const struct winsize win;
-	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) < 0)
-		err(1, "Failed to get terminal window size");
-	ctl.lines = win.ws_row;
+	setupterm(NULL, STDOUT_FILENO, NULL);
+	ctl.key_up_len = strlen(key_up);
+	ctl.key_down_len = strlen(key_down);
 
 	// Display first file
 	display_file(&ctl, argv[optind++]);
@@ -103,7 +102,7 @@ int main(const int argc, char *const argv[]) {
 
 	enum cmd command = CMD_UNKNOWN;
 	while (1) {
-		command = getcmd();
+		command = getcmd(&ctl);
 		switch (command) {
 			case CMD_UNKNOWN:
 				break;

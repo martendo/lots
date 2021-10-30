@@ -1,28 +1,22 @@
 #include <unistd.h>
+#include <string.h>
+#include <term.h>
 
+#include "ctl.h"
 #include "cmd.h"
 
-#define ESC '\033'
-
-enum cmd getcmd(void) {
+enum cmd getcmd(const struct lotsctl *const ctl) {
 	char inbuf[8] = {0};
 	const ssize_t inlen = read(STDERR_FILENO, &inbuf, sizeof(inbuf));
 	if (inlen < 0)
 		return CMD_UNKNOWN;
-	// ANSI escape sequence
-	if (inbuf[0] == ESC && inlen >= 3) {
-		if (inbuf[1] != '[')
-			return CMD_UNKNOWN;
-		switch (inbuf[2]) {
-			// Up arrow: ^[[A
-			case 'A':
-				return CMD_UP;
-			// Down arrow: ^[[B
-			case 'B':
-				return CMD_DOWN;
-		}
-		return CMD_UNKNOWN;
-	}
+
+	// Special key escape sequence
+	if (!memcmp(inbuf, key_up, ctl->key_up_len))
+		return CMD_UP;
+	else if (!memcmp(inbuf, key_down, ctl->key_down_len))
+		return CMD_DOWN;
+
 	// Command
 	for (ssize_t i = 0; i < inlen; i++) {
 		switch (inbuf[i]) {

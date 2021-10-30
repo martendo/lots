@@ -2,17 +2,15 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <err.h>
+#include <term.h>
 
 #include "ctl.h"
 
 #define BUFFER_SIZE 1024
 
-#define TTY_RESET "\033[0m"
-#define TTY_INVERSE "\033[7m"
-
 void print_status(const struct lotsctl *const ctl) {
 	unsigned int percent = ctl->file_pos / ctl->file_size * 100;
-	printf(TTY_INVERSE "%s (%u%%)" TTY_RESET, ctl->filename, percent);
+	printf("%s%s (%u%%)%s", enter_reverse_mode, ctl->filename, percent, exit_attribute_mode);
 	fflush(stdout);
 }
 
@@ -43,12 +41,11 @@ void display_file(struct lotsctl *const ctl, const char *const filename) {
 
 	// Print screenful of content
 	char buffer[BUFFER_SIZE];
-	unsigned short lines = 0;
+	short plines = 0;
 	while (fgets(buffer, sizeof(buffer), ctl->file)) {
 		fputs(buffer, stdout);
 		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
-			lines++;
-			if (lines >= ctl->lines - 1)
+			if (++plines >= lines - 1)
 				break;
 		}
 	}
