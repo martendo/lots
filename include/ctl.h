@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 struct lotsctl {
+	unsigned long page_lines; // Number of lines per page
+
 	const char *filename; // Path to current file
 	FILE *file; // Pointer to the current file stream
 	off_t file_pos; // Current position in current file

@@ -21,7 +21,7 @@ void clear_status(void) {
 	putp(clr_eol);
 }
 
-void move_forwards(struct lotsctl *const ctl, int nlines) {
+void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 	clear_status();
 
 	// Print nlines lines from file
@@ -31,7 +31,7 @@ void move_forwards(struct lotsctl *const ctl, int nlines) {
 		putp(clr_eol);
 		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
 			ctl->line++;
-			if (--nlines <= 0)
+			if (!--nlines)
 				break;
 		}
 	}
@@ -41,16 +41,17 @@ void move_forwards(struct lotsctl *const ctl, int nlines) {
 	print_status(ctl);
 }
 
-void move_backwards(struct lotsctl *const ctl, int nlines) {
+void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	// Seek to new position
 	fseeko(ctl->file, 0, SEEK_SET);
 	char buffer[BUFFER_SIZE];
 	nlines = ctl->line - (lines - 1) - nlines;
-	if (nlines > 0) {
+	// If nlines becomes greater than ctl->line, underflow occurred
+	if (nlines > 0 && nlines < ctl->line) {
 		ctl->line = nlines;
 		while (fgets(buffer, sizeof(buffer), ctl->file)) {
 			if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
-				if (--nlines <= 0)
+				if (!--nlines)
 					break;
 			}
 		}

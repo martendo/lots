@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include <term.h>
 #include <termios.h>
 #include <err.h>
+#include <errno.h>
 #include <getopt.h>
 
 #include "ctl.h"
@@ -15,15 +17,20 @@
 
 #define BUFFER_SIZE 1024
 
-static const char *const optstring = "hv";
+static const char *const optstring = "hl:v";
 
 static const struct option longopts[] = {
-	{"help",    no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
+	{"help",    no_argument,       NULL, 'h'},
+	{"lines",   required_argument, NULL, 'l'},
+	{"version", no_argument,       NULL, 'v'},
 	{NULL, 0, NULL, 0}
 };
 
 int main(const int argc, char *const argv[]) {
+	struct lotsctl ctl = {
+		.page_lines = 0
+	};
+
 	// Get options
 	int option;
 	while ((option = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
@@ -35,11 +42,26 @@ int main(const int argc, char *const argv[]) {
 					"A dead simple terminal pager.\n"
 					"\n"
 					"Options:\n"
-					"  -h, --help     Print this message and exit\n"
-					"  -v, --version  Print the version number and exit\n"
+					"  -l N, --lines=N  Set number of lines per page to N\n"
+					"  -h, --help       Print this message and exit\n"
+					"  -v, --version    Print the version number and exit\n"
 					"\n"
 					LOTS_HOME_PAGE);
 				return 0;
+			case 'l':
+				char *endstr;
+				errno = 0;
+				const unsigned long num = strtoul(optarg, &endstr, 0);
+				if (errno)
+					err(1, "Not a valid integer \"%s\"", optarg);
+				// Don't accept any non-digit characters in number string
+				if (endstr == optarg || *endstr != '\0')
+					errx(1, "Not a valid integer \"%s\"", optarg);
+				// Don't accept zero
+				if (!num)
+					errx(1, "Lines per page must not be zero");
+				ctl.page_lines = num;
+				break;
 			case 'v':
 				puts(
 					"lots " LOTS_VERSION "\n"
@@ -79,8 +101,9 @@ int main(const int argc, char *const argv[]) {
 	}
 
 	// stdout is a terminal -> get terminal capabilities
-	struct lotsctl ctl;
 	setupterm(NULL, STDOUT_FILENO, NULL);
+	if (!ctl.page_lines)
+		ctl.page_lines = lines - 1;
 	ctl.key_up_len = strlen(key_up);
 	ctl.key_down_len = strlen(key_down);
 	ctl.key_ppage_len = strlen(key_ppage);
@@ -117,18 +140,19 @@ int main(const int argc, char *const argv[]) {
 			case CMD_UP:
 				move_backwards(&ctl, 1);
 				break;
+			// Move forwards 1 page
+			case CMD_DOWN_PAGE:
+				move_forwards(&ctl, ctl.page_lines);
+				break;
+			// Move backwards 1 page
+			case CMD_UP_PAGE:
+				move_backwards(&ctl, ctl.page_lines);
+				break;
 			// Jump to beginning of file
 			case CMD_HOME:
 				fseeko(ctl.file, 0, SEEK_SET);
 				ctl.line = 0;
-				// Fall-through
-			// Move forwards 1 page
-			case CMD_DOWN_PAGE:
 				move_forwards(&ctl, lines - 1);
-				break;
-			// Move backwards 1 page
-			case CMD_UP_PAGE:
-				move_backwards(&ctl, lines - 1);
 				break;
 			// Display command help
 			case CMD_HELP:
