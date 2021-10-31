@@ -122,7 +122,7 @@ int main(const int argc, char *const argv[]) {
 
 	// Modify terminal attributes
 	struct termios oldattr, attr;
-	if (tcgetattr(STDIN_FILENO, &oldattr) < 0 && tcgetattr(STDERR_FILENO, &oldattr) < 0)
+	if (tcgetattr(STDIN_FILENO, &oldattr) < 0 && tcgetattr(STDOUT_FILENO, &oldattr) < 0)
 		err(1, "Failed to get terminal attributes");
 	attr = oldattr;
 	// Enter noncanonical mode to recieve character inputs immediately
@@ -131,7 +131,7 @@ int main(const int argc, char *const argv[]) {
 	// Process key after at least 1 character of input with no timer
 	attr.c_cc[VMIN] = 1;
 	attr.c_cc[VTIME] = 0;
-	tcsetattr(STDERR_FILENO, TCSANOW, &attr);
+	tcsetattr(STDOUT_FILENO, TCSANOW, &attr);
 
 	enum cmd command = CMD_UNKNOWN;
 	while (1) {
@@ -197,7 +197,7 @@ int main(const int argc, char *const argv[]) {
 		}
 	}
 quit:
-	if (tcsetattr(STDERR_FILENO, TCSAFLUSH, &oldattr) < 0)
+	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &oldattr) < 0)
 		err(1, "Failed to reset terminal attributes");
 
 	return 0;
