@@ -34,11 +34,15 @@ void print_status(const struct lotsctl *const ctl) {
 	fputs(ctl->filename, stdout);
 	if (ctl->file_count > 1)
 		printf(" (file %u of %u)", ctl->file_index + 1, ctl->file_count);
-	unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
-	if (percent < 100)
-		printf(" line %u (%u%%)", ctl->line, percent);
-	else
-		fputs(" (END)", stdout);
+	if (ctl->file_size) {
+		unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
+		if (percent < 100)
+			printf(" line %u (%u%%)", ctl->line, percent);
+		else
+			fputs(" (END)", stdout);
+	} else {
+		printf(" line %u", ctl->line);
+	}
 	putp(exit_attribute_mode);
 	fflush(stdout);
 }

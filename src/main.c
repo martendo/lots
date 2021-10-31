@@ -17,6 +17,15 @@
 
 #define BUFFER_SIZE 1024
 
+static void print_file(FILE *const file, const char *const filename) {
+	char buffer[BUFFER_SIZE];
+	size_t size;
+	while ((size = fread(&buffer, sizeof(char), sizeof(buffer), file)) > 0)
+		fwrite(&buffer, sizeof(char), size, stdout);
+	if (ferror(file))
+		warn("Could not read \"%s\"", filename);
+}
+
 static const char *const optstring = "hl:v";
 
 static const struct option longopts[] = {
@@ -75,28 +84,27 @@ int main(const int argc, char *const argv[]) {
 				return 1;
 		}
 	}
+	int stdintty = isatty(STDIN_FILENO);
+
 	// Quit if there are no input files
-	if (optind == argc)
+	if (optind == argc && stdintty)
 		errx(1, "No input files given");
 
 	// stdout is not a terminal -> simply copy all files
 	if (!isatty(STDOUT_FILENO)) {
-		do {
-			const char *const filename = argv[optind];
+		// Copy stdin if it is not a terminal (e.g. pipe, file)
+		if (!stdintty)
+			print_file(stdin, "stdin");
+		while (optind < argc) {
+			const char *const filename = argv[optind++];
 			FILE *file = fopen(filename, "r");
 			if (!file) {
 				warn("Could not open \"%s\"", filename);
 				continue;
 			}
-
-			char buffer[BUFFER_SIZE];
-			size_t size;
-			while ((size = fread(&buffer, sizeof(char), sizeof(buffer), file)) > 0)
-				fwrite(&buffer, sizeof(char), size, stdout);
-			if (ferror(file))
-				warn("Could not read \"%s\"", filename);
+			print_file(file, filename);
 			fclose(file);
-		} while (++optind < argc);
+		}
 		return 0;
 	}
 
@@ -115,10 +123,19 @@ int main(const int argc, char *const argv[]) {
 	ctl.files = argv + optind;
 	ctl.file_index = 0;
 
-	// Display first file
-	if (!display_file(&ctl, 1))
-		// No files could be displayed
-		return 1;
+	// Display stdin or first file
+	if (!stdintty) {
+		ctl.filename = "stdin";
+		ctl.file = stdin;
+		ctl.line = 0;
+		ctl.file_size = 0;
+		// Print screenful of content
+		move_forwards(&ctl, lines - 1);
+	} else {
+		if (!display_file(&ctl, 1))
+			// No files could be displayed
+			return 1;
+	}
 
 	// Modify terminal attributes
 	struct termios oldattr, attr;
