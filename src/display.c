@@ -71,6 +71,9 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	// Print screenful of content at new position
 	putp(cursor_home);
 	move_forwards(ctl, lines - 1);
+	// Clear any leftover text after moving cursor position up (home)
+	putp(clr_eos);
+	fflush(stdout);
 }
 
 void display_file(struct lotsctl *const ctl, const int inc) {
