@@ -116,7 +116,9 @@ int main(const int argc, char *const argv[]) {
 	ctl.file_index = 0;
 
 	// Display first file
-	display_file(&ctl, 1);
+	if (!display_file(&ctl, 1))
+		// No files could be displayed
+		return 1;
 
 	// Modify terminal attributes
 	struct termios oldattr, attr;

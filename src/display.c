@@ -88,40 +88,46 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	fflush(stdout);
 }
 
-void display_file(struct lotsctl *const ctl, const int inc) {
+int display_file(struct lotsctl *const ctl, const int inc) {
 	clear_status();
 	fflush(stdout);
 
 	do {
-		ctl->filename = ctl->files[ctl->file_index];
+		const char *const filename = ctl->files[ctl->file_index];
 
 		// Open file
-		ctl->file = fopen(ctl->filename, "r");
-		if (!ctl->file) {
-			warn("Could not open \"%s\"", ctl->filename);
+		FILE *const file = fopen(filename, "r");
+		if (!file) {
+			warn("Could not open \"%s\"", filename);
 			continue;
 		}
 
 		// Get file information
 		struct stat st;
-		if (fstat(fileno(ctl->file), &st) < 0) {
-			warn("Could not stat file \"%s\"", ctl->filename);
+		if (fstat(fileno(file), &st) < 0) {
+			warn("Could not stat file \"%s\"", filename);
+			fclose(file);
 			continue;
 		}
 
 		// Can't display directories
 		if (S_ISDIR(st.st_mode)) {
-			warnx("\"%s\" is a directory", ctl->filename);
+			warnx("\"%s\" is a directory", filename);
+			fclose(file);
 			continue;
 		}
 
+		// File can be displayed
+		ctl->filename = filename;
+		ctl->file = file;
 		ctl->line = 0;
 		ctl->file_size = st.st_size;
 
 		// Print screenful of content
 		move_forwards(ctl, lines - 1);
-		return;
+		return 1;
 	} while ((ctl->file_index += inc) < ctl->file_count);
+	return 0;
 }
 
 void switch_file(struct lotsctl *const ctl, const int offset) {
@@ -132,7 +138,11 @@ void switch_file(struct lotsctl *const ctl, const int offset) {
 		return;
 	}
 	ctl->file_index = new_index;
-	// Keep walking the file list in the direction if some files need to
-	// be skipped
-	display_file(ctl, (offset > 0) - (offset < 0));
+
+	FILE *const prev_file = ctl->file;
+	// Keep walking the file list in the direction of offset if some
+	// files need to be skipped
+	if (display_file(ctl, (offset > 0) - (offset < 0)))
+		// File has been successfully switched -> close previous file
+		fclose(prev_file);
 }
