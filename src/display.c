@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <err.h>
@@ -9,17 +10,25 @@
 
 #define BUFFER_SIZE 1024
 
-void print_status(const struct lotsctl *const ctl) {
-	unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
+void clear_status(void) {
+	putchar('\r');
+	putp(clr_eol);
+}
+
+static void status_printf(const char *const fmt, ...) {
+	clear_status();
 	putp(enter_reverse_mode);
-	printf("%s (file %u of %u) line %u (%u%%)", ctl->filename, ctl->file_index + 1, ctl->file_count, ctl->line, percent);
+	va_list args;
+	va_start(args, fmt);
+	vprintf(fmt, args);
+	va_end(args);
 	putp(exit_attribute_mode);
 	fflush(stdout);
 }
 
-void clear_status(void) {
-	putchar('\r');
-	putp(clr_eol);
+void print_status(const struct lotsctl *const ctl) {
+	unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
+	status_printf("%s (file %u of %u) line %u (%u%%)", ctl->filename, ctl->file_index + 1, ctl->file_count, ctl->line, percent);
 }
 
 void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
@@ -64,9 +73,10 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	move_forwards(ctl, lines - 1);
 }
 
-void display_next_file(struct lotsctl *const ctl) {
-	if (ctl->file_index)
-		ctl->file_index++;
+void display_file(struct lotsctl *const ctl, const int inc) {
+	clear_status();
+	fflush(stdout);
+
 	do {
 		ctl->filename = ctl->files[ctl->file_index];
 
@@ -96,6 +106,18 @@ void display_next_file(struct lotsctl *const ctl) {
 		// Print screenful of content
 		move_forwards(ctl, lines - 1);
 		return;
-	} while (++ctl->file_index < ctl->file_count);
-	exit(0);
+	} while ((ctl->file_index += inc) < ctl->file_count);
+}
+
+void switch_file(struct lotsctl *const ctl, const int offset) {
+	const unsigned int new_index = ctl->file_index + offset;
+	// Underflow also makes the following condition true
+	if (new_index >= ctl->file_count) {
+		status_printf("No %s file", offset > 0 ? "next" : "previous");
+		return;
+	}
+	ctl->file_index = new_index;
+	// Keep walking the file list in the direction if some files need to
+	// be skipped
+	display_file(ctl, (offset > 0) - (offset < 0));
 }

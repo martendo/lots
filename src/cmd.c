@@ -38,6 +38,10 @@ enum cmd getcmd(const struct lotsctl *const ctl) {
 				return CMD_UP_PAGE;
 			case 'g':
 				return CMD_HOME;
+			case 'n':
+				return CMD_NEXT_FILE;
+			case 'p':
+				return CMD_PREV_FILE;
 			case 'h':
 			case 'H':
 				return CMD_HELP;

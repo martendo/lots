@@ -116,7 +116,7 @@ int main(const int argc, char *const argv[]) {
 	ctl.file_index = 0;
 
 	// Display first file
-	display_next_file(&ctl);
+	display_file(&ctl, 1);
 
 	// Modify terminal attributes
 	struct termios oldattr, attr;
@@ -159,6 +159,14 @@ int main(const int argc, char *const argv[]) {
 				ctl.line = 0;
 				move_forwards(&ctl, lines - 1);
 				break;
+			// Switch to next file
+			case CMD_NEXT_FILE:
+				switch_file(&ctl, 1);
+				break;
+			// Switch to previous file
+			case CMD_PREV_FILE:
+				switch_file(&ctl, -1);
+				break;
 			// Display command help
 			case CMD_HELP:
 				clear_status();
@@ -175,6 +183,9 @@ int main(const int argc, char *const argv[]) {
 					"  b  PageUp             Move backwards one page\n"
 					"\n"
 					"  g  Home               Jump to beginning of file\n"
+					"\n"
+					"  n                     Switch to next file\n"
+					"  p                     Switch to previous file\n"
 					"------------------------------------------------------------------------");
 				print_status(&ctl);
 				break;
