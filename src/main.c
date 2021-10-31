@@ -110,8 +110,13 @@ int main(const int argc, char *const argv[]) {
 	ctl.key_npage_len = strlen(key_npage);
 	ctl.key_home_len = strlen(key_home);
 
+	// Get file list
+	ctl.file_count = argc - optind;
+	ctl.files = argv + optind;
+	ctl.file_index = 0;
+
 	// Display first file
-	display_file(&ctl, argv[optind++]);
+	display_next_file(&ctl);
 
 	// Modify terminal attributes
 	struct termios oldattr, attr;

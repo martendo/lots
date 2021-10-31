@@ -9,6 +9,6 @@ void clear_status(void);
 void move_forwards(struct lotsctl *const, unsigned long);
 void move_backwards(struct lotsctl *const, unsigned long);
 
-void display_file(struct lotsctl *const, const char *const);
+void display_next_file(struct lotsctl *const);
 
 #endif
