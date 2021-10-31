@@ -23,32 +23,31 @@ enum cmd getcmd(const struct lotsctl *const ctl) {
 	else if (!memcmp(inbuf, key_home, ctl->key_home_len))
 		return CMD_HOME;
 
-	// Command
-	for (ssize_t i = 0; i < inlen; i++) {
-		switch (inbuf[i]) {
-			case 'j':
-			case '\n':
-				return CMD_DOWN;
-			case 'k':
-				return CMD_UP;
-			case ' ':
-			case 'f':
-				return CMD_DOWN_PAGE;
-			case 'b':
-				return CMD_UP_PAGE;
-			case 'g':
-				return CMD_HOME;
-			case 'n':
-				return CMD_NEXT_FILE;
-			case 'p':
-				return CMD_PREV_FILE;
-			case 'h':
-			case 'H':
-				return CMD_HELP;
-			case 'q':
-			case 'Q':
-				return CMD_QUIT;
-		}
+	// Command character
+	switch (inbuf[0]) {
+		case 'j':
+		case '\n':
+			return CMD_DOWN;
+		case 'k':
+			return CMD_UP;
+		case ' ':
+		case 'f':
+			return CMD_DOWN_PAGE;
+		case 'b':
+			return CMD_UP_PAGE;
+		case 'g':
+			return CMD_HOME;
+		case 'n':
+			return CMD_NEXT_FILE;
+		case 'p':
+			return CMD_PREV_FILE;
+		case 'h':
+		case 'H':
+			return CMD_HELP;
+		case 'q':
+		case 'Q':
+			return CMD_QUIT;
+		default:
+			return CMD_UNKNOWN;
 	}
-	return CMD_UNKNOWN;
 }
