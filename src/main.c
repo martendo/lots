@@ -130,6 +130,25 @@ int main(const int argc, char *const argv[]) {
 			case CMD_UP_PAGE:
 				move_backwards(&ctl, lines - 1);
 				break;
+			// Display command help
+			case CMD_HELP:
+				clear_status();
+				puts(
+					"------------------------------------------------------------------------\n"
+					"lots Commands\n"
+					"\n"
+					"  h  H                  Display this help\n"
+					"  q  Q                  Quit lots\n"
+					"\n"
+					"  j  DownArrow  Return  Move forwards one line\n"
+					"  k  UpArrow            Move backwards one line\n"
+					"  f  PageDown  Space    Move forwards one page\n"
+					"  b  PageUp             Move backwards one page\n"
+					"\n"
+					"  g  Home               Jump to beginning of file\n"
+					"------------------------------------------------------------------------");
+				print_status(&ctl);
+				break;
 			// Exit lots
 			case CMD_QUIT:
 				goto quit;

@@ -16,10 +16,13 @@ void print_status(const struct lotsctl *const ctl) {
 	fflush(stdout);
 }
 
-void move_forwards(struct lotsctl *const ctl, int nlines) {
-	// Clear status
+void clear_status(void) {
 	putchar('\r');
 	putp(clr_eol);
+}
+
+void move_forwards(struct lotsctl *const ctl, int nlines) {
+	clear_status();
 
 	// Print nlines lines from file
 	char buffer[BUFFER_SIZE];
