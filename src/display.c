@@ -11,6 +11,8 @@
 #define BUFFER_SIZE 1024
 
 void clear_status(void) {
+	// Clear the status line, assuming the cursor is currently at the
+	// end of it
 	putchar('\r');
 	putp(clr_eol);
 }
@@ -27,8 +29,18 @@ static void status_printf(const char *const fmt, ...) {
 }
 
 void print_status(const struct lotsctl *const ctl) {
+	clear_status();
+	putp(enter_reverse_mode);
+	fputs(ctl->filename, stdout);
+	if (ctl->file_count > 1)
+		printf(" (file %u of %u)", ctl->file_index + 1, ctl->file_count);
 	unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
-	status_printf("%s (file %u of %u) line %u (%u%%)", ctl->filename, ctl->file_index + 1, ctl->file_count, ctl->line, percent);
+	if (percent < 100)
+		printf(" line %u (%u%%)", ctl->line, percent);
+	else
+		fputs(" (END)", stdout);
+	putp(exit_attribute_mode);
+	fflush(stdout);
 }
 
 void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
