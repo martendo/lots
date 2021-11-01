@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <term.h>
 #include <termios.h>
 #include <err.h>
@@ -128,7 +129,9 @@ int main(const int argc, char *const argv[]) {
 		ctl.filename = "stdin";
 		ctl.file = stdin;
 		ctl.line = 0;
-		ctl.file_size = 0;
+		struct stat st;
+		fstat(fileno(ctl.file), &st);
+		ctl.file_size = st.st_size;
 		// Print screenful of content
 		move_forwards(&ctl, lines - 1);
 	} else {
