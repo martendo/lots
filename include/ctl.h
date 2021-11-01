@@ -2,8 +2,11 @@
 #define LOTS_CTL_H
 
 #include <stdio.h>
+#include <termios.h>
 
 struct lotsctl {
+	struct termios oldattr; // Original terminal attributes
+
 	unsigned long page_lines; // Number of lines per page
 
 	unsigned int file_count; // Number of files to display

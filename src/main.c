@@ -18,6 +18,17 @@
 
 #define BUFFER_SIZE 1024
 
+static void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const ctl, const int status) {
+	clear_status();
+	fflush(NULL);
+	if (ctl->file)
+		fclose(ctl->file);
+	del_curterm(cur_term);
+	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &ctl->oldattr) < 0)
+		err(1, "Failed to reset terminal attributes");
+	exit(status);
+}
+
 static void print_file(FILE *const file, const char *const filename) {
 	char buffer[BUFFER_SIZE];
 	size_t size;
@@ -38,7 +49,8 @@ static const struct option longopts[] = {
 
 int main(const int argc, char *const argv[]) {
 	struct lotsctl ctl = {
-		.page_lines = 0
+		.page_lines = 0,
+		.file = NULL
 	};
 
 	// Get options
@@ -119,6 +131,18 @@ int main(const int argc, char *const argv[]) {
 	ctl.key_npage_len = strlen(key_npage);
 	ctl.key_home_len = strlen(key_home);
 
+	// Modify terminal attributes
+	if (tcgetattr(STDIN_FILENO, &ctl.oldattr) < 0 && tcgetattr(STDOUT_FILENO, &ctl.oldattr) < 0)
+		err(1, "Failed to get terminal attributes");
+	struct termios attr = ctl.oldattr;
+	// Enter noncanonical mode to recieve character inputs immediately
+	// and disable echoing of input characters
+	attr.c_lflag &= ~(ICANON | ECHO);
+	// Process key after at least 1 character of input with no timer
+	attr.c_cc[VMIN] = 1;
+	attr.c_cc[VTIME] = 0;
+	tcsetattr(STDOUT_FILENO, TCSANOW, &attr);
+
 	// Get file list
 	ctl.file_count = argc - optind;
 	ctl.files = argv + optind;
@@ -137,21 +161,8 @@ int main(const int argc, char *const argv[]) {
 	} else {
 		if (!display_file(&ctl, 1))
 			// No files could be displayed
-			return 1;
+			lots_exit(&ctl, 1);
 	}
-
-	// Modify terminal attributes
-	struct termios oldattr, attr;
-	if (tcgetattr(STDIN_FILENO, &oldattr) < 0 && tcgetattr(STDOUT_FILENO, &oldattr) < 0)
-		err(1, "Failed to get terminal attributes");
-	attr = oldattr;
-	// Enter noncanonical mode to recieve character inputs immediately
-	// and disable echoing of input characters
-	attr.c_lflag &= ~(ICANON | ECHO);
-	// Process key after at least 1 character of input with no timer
-	attr.c_cc[VMIN] = 1;
-	attr.c_cc[VTIME] = 0;
-	tcsetattr(STDOUT_FILENO, TCSANOW, &attr);
 
 	enum cmd command = CMD_UNKNOWN;
 	while (1) {
@@ -216,13 +227,9 @@ int main(const int argc, char *const argv[]) {
 				break;
 			// Exit lots
 			case CMD_QUIT:
-				goto quit;
+				lots_exit(&ctl, 0);
+				// Not reached
 		}
 	}
-quit:
-	clear_status();
-	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &oldattr) < 0)
-		err(1, "Failed to reset terminal attributes");
-
 	return 0;
 }
