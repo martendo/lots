@@ -177,7 +177,10 @@ int main(const int argc, char *const argv[]) {
 				break;
 			// Jump to beginning of file
 			case CMD_HOME:
-				fseeko(ctl.file, 0, SEEK_SET);
+				if (fseeko(ctl.file, 0, SEEK_SET) < 0) {
+					status_printf("Can't seek file");
+					break;
+				}
 				ctl.line = 0;
 				move_forwards(&ctl, lines - 1);
 				break;

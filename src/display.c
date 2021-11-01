@@ -17,7 +17,7 @@ void clear_status(void) {
 	putp(clr_eol);
 }
 
-static void status_printf(const char *const fmt, ...) {
+void status_printf(const char *const fmt, ...) {
 	clear_status();
 	putp(enter_reverse_mode);
 	va_list args;
@@ -69,7 +69,10 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 
 void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	// Seek to new position
-	fseeko(ctl->file, 0, SEEK_SET);
+	if (fseeko(ctl->file, 0, SEEK_SET) < 0) {
+		status_printf("Can't seek file");
+		return;
+	}
 	char buffer[BUFFER_SIZE];
 	nlines = ctl->line - (lines - 1) - nlines;
 	// If nlines becomes greater than ctl->line, underflow occurred
