@@ -220,6 +220,7 @@ int main(const int argc, char *const argv[]) {
 		}
 	}
 quit:
+	clear_status();
 	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &oldattr) < 0)
 		err(1, "Failed to reset terminal attributes");
 
