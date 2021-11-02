@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <string.h>
-#include <err.h>
+#include <errno.h>
 #include <term.h>
 
 #include "ctl.h"
@@ -105,21 +105,21 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		// Open file
 		FILE *const file = fopen(filename, "r");
 		if (!file) {
-			warn("Could not open \"%s\"", filename);
+			status_printf("Could not open \"%s\": %s", filename, strerror(errno));
 			continue;
 		}
 
 		// Get file information
 		struct stat st;
 		if (fstat(fileno(file), &st) < 0) {
-			warn("Could not stat file \"%s\"", filename);
+			status_printf("Could not stat file \"%s\": %s", filename, strerror(errno));
 			fclose(file);
 			continue;
 		}
 
 		// Can't display directories
 		if (S_ISDIR(st.st_mode)) {
-			warnx("\"%s\" is a directory", filename);
+			status_printf("\"%s\" is a directory", filename);
 			fclose(file);
 			continue;
 		}
