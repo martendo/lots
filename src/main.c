@@ -205,6 +205,8 @@ int main(const int argc, char *const argv[]) {
 						ctl.line++;
 				}
 				ctl.file_pos = ftello(ctl.file);
+				if (!ctl.file_size)
+					ctl.file_size = ctl.file_pos;
 				print_status(&ctl);
 				break;
 			// Switch to next file

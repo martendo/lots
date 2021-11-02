@@ -62,6 +62,9 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 		}
 	}
 	ctl->file_pos = ftello(ctl->file);
+	// File size was previously unknown and reached EOF
+	if (!ctl->file_size && nlines)
+		ctl->file_size = ctl->file_pos;
 
 	// Reprint status
 	print_status(ctl);
