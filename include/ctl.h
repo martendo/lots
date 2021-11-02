@@ -24,6 +24,7 @@ struct lotsctl {
 	size_t key_ppage_len; // strlen(key_ppage)
 	size_t key_npage_len; // strlen(key_npage)
 	size_t key_home_len; // strlen(key_home)
+	size_t key_end_len; // strlen(key_end)
 };
 
 #endif

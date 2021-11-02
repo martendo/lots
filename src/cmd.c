@@ -22,6 +22,8 @@ enum cmd getcmd(const struct lotsctl *const ctl) {
 		return CMD_UP_PAGE;
 	else if (!memcmp(inbuf, key_home, ctl->key_home_len))
 		return CMD_HOME;
+	else if (!memcmp(inbuf, key_end, ctl->key_end_len))
+		return CMD_END;
 
 	// Command character
 	switch (inbuf[0]) {
@@ -37,6 +39,8 @@ enum cmd getcmd(const struct lotsctl *const ctl) {
 			return CMD_UP_PAGE;
 		case 'g':
 			return CMD_HOME;
+		case 'G':
+			return CMD_END;
 		case 'n':
 			return CMD_NEXT_FILE;
 		case 'p':

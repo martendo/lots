@@ -130,6 +130,7 @@ int main(const int argc, char *const argv[]) {
 	ctl.key_ppage_len = strlen(key_ppage);
 	ctl.key_npage_len = strlen(key_npage);
 	ctl.key_home_len = strlen(key_home);
+	ctl.key_end_len = strlen(key_end);
 
 	// Modify terminal attributes
 	if (tcgetattr(STDIN_FILENO, &ctl.oldattr) < 0 && tcgetattr(STDOUT_FILENO, &ctl.oldattr) < 0)
@@ -195,6 +196,17 @@ int main(const int argc, char *const argv[]) {
 				ctl.line = 0;
 				move_forwards(&ctl, lines - 1);
 				break;
+			// Jump (really "move") to end of file
+			case CMD_END:
+				char buffer[BUFFER_SIZE];
+				while (fgets(buffer, sizeof(buffer), ctl.file)) {
+					fputs(buffer, stdout);
+					if (strcspn(buffer, "\n") < BUFFER_SIZE - 1)
+						ctl.line++;
+				}
+				ctl.file_pos = ftello(ctl.file);
+				print_status(&ctl);
+				break;
 			// Switch to next file
 			case CMD_NEXT_FILE:
 				switch_file(&ctl, 1);
@@ -219,6 +231,7 @@ int main(const int argc, char *const argv[]) {
 					"  b  PageUp             Move backwards one page\n"
 					"\n"
 					"  g  Home               Jump to beginning of file\n"
+					"  G  End                Jump to end of file\n"
 					"\n"
 					"  n                     Switch to next file\n"
 					"  p                     Switch to previous file\n"
