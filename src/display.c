@@ -10,26 +10,20 @@
 
 #define BUFFER_SIZE 1024
 
-void clear_status(void) {
-	// Clear the status line, assuming the cursor is currently at the
-	// end of it
-	putchar('\r');
-	putp(clr_eol);
-}
-
 void status_printf(const char *const fmt, ...) {
-	clear_status();
+	putchar('\r');
 	putp(enter_reverse_mode);
 	va_list args;
 	va_start(args, fmt);
 	vprintf(fmt, args);
 	va_end(args);
 	putp(exit_attribute_mode);
+	putp(clr_eol);
 	fflush(stdout);
 }
 
 void print_status(const struct lotsctl *const ctl) {
-	clear_status();
+	putchar('\r');
 	putp(enter_reverse_mode);
 	fputs(ctl->filename, stdout);
 	if (ctl->file_count > 1)
@@ -44,18 +38,30 @@ void print_status(const struct lotsctl *const ctl) {
 		printf(" line %u", ctl->line);
 	}
 	putp(exit_attribute_mode);
+	putp(clr_eol);
 	fflush(stdout);
 }
 
 void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
-	clear_status();
+	putchar('\r');
+	// Clear the line for e.g. TAB
+	putp(clr_eol);
 
 	// Print nlines lines from file
 	char buffer[BUFFER_SIZE];
 	while (fgets(buffer, sizeof(buffer), ctl->file)) {
+		// Remove trailing newline, if any, so that the rest of the line
+		// may be cleared before moving on to the next
+		size_t len = strcspn(buffer, "\n");
+		buffer[len] = '\0';
 		fputs(buffer, stdout);
-		putp(clr_eol);
-		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
+		// If there was a newline, clear the rest of the line, then print
+		// the newline, clear the next line (for e.g. TAB) and count the
+		// line
+		if (len < BUFFER_SIZE - 1) {
+			putp(clr_eol);
+			putchar('\n');
+			putp(clr_eol);
 			ctl->line++;
 			if (!--nlines)
 				break;
@@ -99,9 +105,6 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 }
 
 int display_file(struct lotsctl *const ctl, const int inc) {
-	clear_status();
-	fflush(stdout);
-
 	do {
 		const char *const filename = ctl->files[ctl->file_index];
 

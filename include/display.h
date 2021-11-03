@@ -3,7 +3,6 @@
 
 #include "ctl.h"
 
-void clear_status(void);
 void status_printf(const char *const, ...);
 void print_status(const struct lotsctl *const);
 

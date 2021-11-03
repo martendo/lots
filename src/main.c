@@ -19,7 +19,10 @@
 #define BUFFER_SIZE 1024
 
 static void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const ctl, const int status) {
-	clear_status();
+	// Clear status line
+	putchar('\r');
+	putp(clr_eol);
+
 	fflush(NULL);
 	if (ctl->file)
 		fclose(ctl->file);
@@ -219,7 +222,9 @@ int main(const int argc, char *const argv[]) {
 				break;
 			// Display command help
 			case CMD_HELP:
-				clear_status();
+				// Clear status line
+				putchar('\r');
+				putp(clr_eol);
 				puts(
 					"------------------------------------------------------------------------\n"
 					"lots Commands\n"
