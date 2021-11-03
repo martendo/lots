@@ -29,6 +29,7 @@ enum cmd getcmd(const struct lotsctl *const ctl) {
 	switch (inbuf[0]) {
 		case 'j':
 		case '\n':
+		case '\r':
 			return CMD_DOWN;
 		case 'k':
 			return CMD_UP;
