@@ -7,8 +7,7 @@
 
 enum cmd getcmd(const struct lotsctl *const ctl) {
 	char inbuf[8] = {0};
-	const ssize_t inlen = read(STDOUT_FILENO, &inbuf, sizeof(inbuf));
-	if (inlen < 0)
+	if (read(STDOUT_FILENO, &inbuf, sizeof(inbuf)) <= 0)
 		return CMD_UNKNOWN;
 
 	// Special key escape sequence
