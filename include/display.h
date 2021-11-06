@@ -3,8 +3,8 @@
 
 #include "ctl.h"
 
-void status_printf(const char *const, ...);
 void print_status(const struct lotsctl *const);
+void status_printf(const struct lotsctl *const, const char *const, ...);
 
 void move_forwards(struct lotsctl *const, unsigned long);
 void move_backwards(struct lotsctl *const, unsigned long);

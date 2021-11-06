@@ -194,7 +194,7 @@ int main(const int argc, char *argv[]) {
 			// Jump to beginning of file
 			case CMD_HOME:
 				if (fseeko(ctl.file, 0, SEEK_SET) < 0) {
-					status_printf("Can't seek file");
+					status_printf(&ctl, "Can't seek file");
 					break;
 				}
 				ctl.line = 0;

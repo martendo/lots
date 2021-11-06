@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <sys/stat.h>
@@ -9,18 +10,6 @@
 #include "ctl.h"
 
 #define BUFFER_SIZE 1024
-
-void status_printf(const char *const fmt, ...) {
-	putchar('\r');
-	putp(enter_reverse_mode);
-	va_list args;
-	va_start(args, fmt);
-	vprintf(fmt, args);
-	va_end(args);
-	putp(exit_attribute_mode);
-	putp(clr_eol);
-	fflush(stdout);
-}
 
 void print_status(const struct lotsctl *const ctl) {
 	putchar('\r');
@@ -42,6 +31,33 @@ void print_status(const struct lotsctl *const ctl) {
 	putp(exit_attribute_mode);
 	putp(clr_eol);
 	fflush(stdout);
+}
+
+static inline void wait_key(void) {
+	// Wait for any input
+	char c;
+	read(STDOUT_FILENO, &c, 1);
+}
+
+void status_printf(const struct lotsctl *const ctl, const char *const fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	if (!ctl->file) {
+		vprintf(fmt, args);
+		putchar('\n');
+		return;
+	}
+	putchar('\r');
+	putp(enter_reverse_mode);
+	vprintf(fmt, args);
+	va_end(args);
+	printf(" (press a key)");
+	putp(exit_attribute_mode);
+	putp(clr_eol);
+	fflush(stdout);
+
+	wait_key();
+	print_status(ctl);
 }
 
 void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
@@ -81,7 +97,7 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	// Seek to new position
 	if (fseeko(ctl->file, 0, SEEK_SET) < 0) {
-		status_printf("Can't seek file");
+		status_printf(ctl, "Can't seek file");
 		return;
 	}
 	char buffer[BUFFER_SIZE];
@@ -114,13 +130,17 @@ static void remove_file(struct lotsctl *const ctl) {
 }
 
 int display_file(struct lotsctl *const ctl, const int inc) {
+	// Store the old file count to check if some errors were printed
+	// (files removed from the file array due to being undisplayable)
+	const int old_file_count = ctl->file_count;
+
 	do {
 		const char *const filename = ctl->files[ctl->file_index];
 
 		// Open file
 		FILE *const file = fopen(filename, "r");
 		if (!file) {
-			status_printf("Could not open \"%s\": %s", filename, strerror(errno));
+			status_printf(ctl, "Could not open \"%s\": %s", filename, strerror(errno));
 			remove_file(ctl);
 			continue;
 		}
@@ -128,7 +148,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		// Get file information
 		struct stat st;
 		if (fstat(fileno(file), &st) < 0) {
-			status_printf("Could not stat file \"%s\": %s", filename, strerror(errno));
+			status_printf(ctl, "Could not stat file \"%s\": %s", filename, strerror(errno));
 			fclose(file);
 			remove_file(ctl);
 			continue;
@@ -136,13 +156,19 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 
 		// Can't display directories
 		if (S_ISDIR(st.st_mode)) {
-			status_printf("\"%s\" is a directory", filename);
+			status_printf(ctl, "\"%s\" is a directory", filename);
 			fclose(file);
 			remove_file(ctl);
 			continue;
 		}
 
-		// File can be displayed
+		// File can be displayed, but first wait for Return if errors
+		// were printed
+		if (old_file_count != ctl->file_count) {
+			puts("\nPress any key to continue");
+			wait_key();
+		}
+
 		ctl->filename = filename;
 		ctl->file = file;
 		ctl->line = 0;
@@ -158,7 +184,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 void switch_file(struct lotsctl *const ctl, const int offset) {
 	const int new_index = ctl->file_index + offset;
 	if (new_index >= ctl->file_count || new_index < 0) {
-		status_printf("No %s file", offset > 0 ? "next" : "previous");
+		status_printf(ctl, "No %s file", offset > 0 ? "next" : "previous");
 		return;
 	}
 	ctl->file_index = new_index;
