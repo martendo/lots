@@ -50,7 +50,7 @@ static const struct option longopts[] = {
 	{NULL, 0, NULL, 0}
 };
 
-int main(const int argc, char *const argv[]) {
+int main(const int argc, char *argv[]) {
 	struct lotsctl ctl = {
 		.page_lines = 0,
 		.file = NULL

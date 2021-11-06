@@ -106,6 +106,13 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	fflush(stdout);
 }
 
+static void remove_file(struct lotsctl *const ctl) {
+	for (int i = ctl->file_index; i < ctl->file_count - 1; i++)
+		ctl->files[i] = ctl->files[i + 1];
+	ctl->file_count--;
+	ctl->file_index--;
+}
+
 int display_file(struct lotsctl *const ctl, const int inc) {
 	do {
 		const char *const filename = ctl->files[ctl->file_index];
@@ -114,6 +121,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		FILE *const file = fopen(filename, "r");
 		if (!file) {
 			status_printf("Could not open \"%s\": %s", filename, strerror(errno));
+			remove_file(ctl);
 			continue;
 		}
 
@@ -122,6 +130,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		if (fstat(fileno(file), &st) < 0) {
 			status_printf("Could not stat file \"%s\": %s", filename, strerror(errno));
 			fclose(file);
+			remove_file(ctl);
 			continue;
 		}
 
@@ -129,6 +138,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		if (S_ISDIR(st.st_mode)) {
 			status_printf("\"%s\" is a directory", filename);
 			fclose(file);
+			remove_file(ctl);
 			continue;
 		}
 
