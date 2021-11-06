@@ -26,8 +26,10 @@ void print_status(const struct lotsctl *const ctl) {
 	putchar('\r');
 	putp(enter_reverse_mode);
 	fputs(ctl->filename, stdout);
-	if (ctl->file_count > 1)
+	if (ctl->file_count > 1 && ctl->file_index >= 0)
 		printf(" (file %d of %d)", ctl->file_index + 1, ctl->file_count);
+	else if (ctl->file_count > 0 && ctl->file_index == -1)
+		printf(" (%d file%s next)", ctl->file_count, ctl->file_count - 1 ? "s" : "");
 	if (ctl->file_size) {
 		unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
 		if (percent < 100)

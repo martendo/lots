@@ -156,6 +156,7 @@ int main(const int argc, char *const argv[]) {
 	if (!stdintty) {
 		ctl.filename = "stdin";
 		ctl.file = stdin;
+		ctl.file_index = -1;
 		ctl.line = 0;
 		struct stat st;
 		fstat(fileno(ctl.file), &st);
