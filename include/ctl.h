@@ -9,9 +9,9 @@ struct lotsctl {
 
 	unsigned long page_lines; // Number of lines per page
 
-	unsigned int file_count; // Number of files to display
+	int file_count; // Number of files to display
 	char *const *files; // Filenames of files to display
-	unsigned int file_index; // Current index into .files
+	int file_index; // Current index into .files
 
 	const char *filename; // Path to current file
 	FILE *file; // Pointer to the current file stream

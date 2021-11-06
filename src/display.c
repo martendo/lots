@@ -27,7 +27,7 @@ void print_status(const struct lotsctl *const ctl) {
 	putp(enter_reverse_mode);
 	fputs(ctl->filename, stdout);
 	if (ctl->file_count > 1)
-		printf(" (file %u of %u)", ctl->file_index + 1, ctl->file_count);
+		printf(" (file %d of %d)", ctl->file_index + 1, ctl->file_count);
 	if (ctl->file_size) {
 		unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
 		if (percent < 100)
@@ -144,9 +144,8 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 }
 
 void switch_file(struct lotsctl *const ctl, const int offset) {
-	const unsigned int new_index = ctl->file_index + offset;
-	// Underflow also makes the following condition true
-	if (new_index >= ctl->file_count) {
+	const int new_index = ctl->file_index + offset;
+	if (new_index >= ctl->file_count || new_index < 0) {
 		status_printf("No %s file", offset > 0 ? "next" : "previous");
 		return;
 	}
