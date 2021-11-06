@@ -13,7 +13,7 @@
 #include "cmd.h"
 #include "display.h"
 
-#define LOTS_VERSION "0.0.0"
+#define LOTS_VERSION "1.0.0"
 #define LOTS_HOME_PAGE "lots home page: <https://github.com/martendo/lots>"
 
 #define BUFFER_SIZE 1024
