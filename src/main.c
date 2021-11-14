@@ -113,7 +113,7 @@ int main(const int argc, char *argv[]) {
 			print_file(stdin, "stdin");
 		while (optind < argc) {
 			const char *const filename = argv[optind++];
-			FILE *file = fopen(filename, "r");
+			FILE *const file = fopen(filename, "r");
 			if (!file) {
 				warn("Could not open \"%s\"", filename);
 				continue;
@@ -159,7 +159,7 @@ int main(const int argc, char *argv[]) {
 		ctl.file_index = -1;
 		ctl.line = 0;
 		struct stat st;
-		fstat(fileno(ctl.file), &st);
+		fstat(STDIN_FILENO, &st);
 		ctl.file_size = st.st_size;
 		// Print screenful of content
 		move_forwards(&ctl, lines - 1);
@@ -252,5 +252,6 @@ int main(const int argc, char *argv[]) {
 				// Not reached
 		}
 	}
-	return 0;
+	// This should never be reached
+	return 1;
 }

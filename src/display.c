@@ -51,7 +51,7 @@ void status_printf(const struct lotsctl *const ctl, const char *const fmt, ...) 
 	putp(enter_reverse_mode);
 	vprintf(fmt, args);
 	va_end(args);
-	printf(" (press a key)");
+	fputs(" (press a key)", stdout);
 	putp(exit_attribute_mode);
 	putp(clr_eol);
 	fflush(stdout);
@@ -95,12 +95,13 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 }
 
 void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
-	// Seek to new position
+	// Seek to beginning of file
 	if (fseeko(ctl->file, 0, SEEK_SET) < 0) {
 		status_printf(ctl, "Can't seek file");
 		return;
 	}
 	char buffer[BUFFER_SIZE];
+	// Find line before first line to print after moving backwards
 	nlines = ctl->line - (lines - 1) - nlines;
 	// If nlines becomes greater than ctl->line, underflow occurred
 	if (nlines > 0 && nlines < ctl->line) {
@@ -123,8 +124,10 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 }
 
 static void remove_file(struct lotsctl *const ctl) {
+	// Shift all file pointers following the current one down one spot
 	for (int i = ctl->file_index; i < ctl->file_count - 1; i++)
 		ctl->files[i] = ctl->files[i + 1];
+	// Update file count and current index
 	ctl->file_count--;
 	ctl->file_index--;
 }
@@ -183,6 +186,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 
 void switch_file(struct lotsctl *const ctl, const int offset) {
 	const int new_index = ctl->file_index + offset;
+	// New index is out of range of the file array
 	if (new_index >= ctl->file_count || new_index < 0) {
 		status_printf(ctl, "No %s file", offset > 0 ? "next" : "previous");
 		return;
