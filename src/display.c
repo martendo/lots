@@ -94,6 +94,15 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 	print_status(ctl);
 }
 
+static void redraw(struct lotsctl *const ctl) {
+	// Print screenful of content starting at home
+	putp(cursor_home);
+	move_forwards(ctl, lines - 1);
+	// Clear any leftover text after moving cursor position up (home)
+	putp(clr_eos);
+	fflush(stdout);
+}
+
 void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	// Seek to beginning of file
 	if (fseeko(ctl->file, 0, SEEK_SET) < 0) {
@@ -115,12 +124,7 @@ void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
 	} else {
 		ctl->line = 0;
 	}
-	// Print screenful of content at new position
-	putp(cursor_home);
-	move_forwards(ctl, lines - 1);
-	// Clear any leftover text after moving cursor position up (home)
-	putp(clr_eos);
-	fflush(stdout);
+	redraw(ctl);
 }
 
 static void remove_file(struct lotsctl *const ctl) {
@@ -177,8 +181,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		ctl->line = 0;
 		ctl->file_size = st.st_size;
 
-		// Print screenful of content
-		move_forwards(ctl, lines - 1);
+		redraw(ctl);
 		return 1;
 	} while ((ctl->file_index += inc) < ctl->file_count);
 	return 0;
