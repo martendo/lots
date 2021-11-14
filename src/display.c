@@ -169,9 +169,9 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 			continue;
 		}
 
-		// File can be displayed, but first wait for Return if errors
-		// were printed
-		if (old_file_count != ctl->file_count) {
+		// File can be displayed, but first wait for key if not yet
+		// entered "interactive mode" and errors were printed
+		if (!ctl->file && old_file_count != ctl->file_count) {
 			puts("\nPress any key to continue");
 			wait_key();
 		}
