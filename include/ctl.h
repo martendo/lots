@@ -2,6 +2,7 @@
 #define LOTS_CTL_H
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <termios.h>
 #include <signal.h>
 
@@ -9,6 +10,7 @@ struct lotsctl {
 	struct termios oldattr; // Original terminal attributes
 
 	unsigned long page_lines; // Number of lines per page
+	bool set_lines; // Whether or not the --lines option was used
 
 	sigset_t sigset; // Signals to listen for
 	int sigfd; // signalfd file descriptor

@@ -19,7 +19,7 @@ enum cmd {
 
 void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const, const int);
 
-int lots_poll(const struct lotsctl *const);
+int lots_poll(struct lotsctl *const);
 
 enum cmd getcmd(const struct lotsctl *const);
 

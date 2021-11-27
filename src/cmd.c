@@ -8,6 +8,7 @@
 
 #include "ctl.h"
 #include "cmd.h"
+#include "display.h"
 
 void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const ctl, const int status) {
 	// Clear status line
@@ -23,7 +24,7 @@ void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const ctl, const
 	exit(status);
 }
 
-int lots_poll(const struct lotsctl *const ctl) {
+int lots_poll(struct lotsctl *const ctl) {
 	// Wait for signals and/or user input
 	struct pollfd pfd[2];
 	pfd[0].fd = ctl->sigfd;
@@ -43,6 +44,19 @@ int lots_poll(const struct lotsctl *const ctl) {
 			case SIGQUIT:
 				lots_exit(ctl, 0);
 				// Not reached
+			case SIGWINCH:
+				// Move to position in file at top of terminal
+				const int ret = seek_line(ctl, ctl->line - (lines - 1));
+				// Get terminfo to update the terminal size
+				setupterm(NULL, STDOUT_FILENO, NULL);
+				// Redraw screen
+				if (ret == 0)
+					redraw(ctl);
+				// If the number of lines per page wasn't set by the
+				// user, update it with the new terminal height
+				if (!ctl->set_lines)
+					ctl->page_lines = lines - 1;
+				break;
 			default:
 				abort();
 				// Not reached

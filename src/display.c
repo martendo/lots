@@ -94,7 +94,7 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 	print_status(ctl);
 }
 
-static void redraw(struct lotsctl *const ctl) {
+void redraw(struct lotsctl *const ctl) {
 	// Print screenful of content starting at home
 	putp(cursor_home);
 	move_forwards(ctl, lines - 1);
@@ -103,27 +103,36 @@ static void redraw(struct lotsctl *const ctl) {
 	fflush(stdout);
 }
 
-void move_backwards(struct lotsctl *const ctl, unsigned long nlines) {
+// This function is only used to seek to a line that appears before the
+// current file position, seeking backwards
+int seek_line(struct lotsctl *const ctl, unsigned long target) {
 	// Seek to beginning of file
 	if (fseeko(ctl->file, 0, SEEK_SET) < 0) {
 		status_printf(ctl, "Can't seek file");
-		return;
+		return 1;
 	}
+	ctl->line = target;
+	if (target == 0)
+		return 0;
 	char buffer[BUFFER_SIZE];
-	// Find line before first line to print after moving backwards
-	nlines = ctl->line - (lines - 1) - nlines;
-	// If nlines becomes greater than ctl->line, underflow occurred
-	if (nlines > 0 && nlines < ctl->line) {
-		ctl->line = nlines;
-		while (fgets(buffer, sizeof(buffer), ctl->file)) {
-			if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
-				if (!--nlines)
-					break;
-			}
+	while (fgets(buffer, sizeof(buffer), ctl->file)) {
+		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
+			if (!--target)
+				break;
 		}
-	} else {
-		ctl->line = 0;
 	}
+	return 0;
+}
+
+void move_backwards(struct lotsctl *const ctl, const unsigned long nlines) {
+	// Find line before first line to print after moving backwards
+	unsigned long target = ctl->line - (lines - 1) - nlines;
+	// If target line becomes greater than or equal to current line,
+	// underflow occurred
+	if (target >= ctl->line)
+		target = 0;
+	if (seek_line(ctl, target) != 0)
+		return;
 	redraw(ctl);
 }
 

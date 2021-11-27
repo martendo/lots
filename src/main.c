@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include <term.h>
 #include <termios.h>
@@ -39,7 +40,7 @@ static const struct option longopts[] = {
 
 int main(const int argc, char *argv[]) {
 	struct lotsctl ctl = {
-		.page_lines = 0,
+		.set_lines = false,
 		.file = NULL
 	};
 
@@ -73,6 +74,7 @@ int main(const int argc, char *argv[]) {
 				if (!num)
 					errx(1, "Lines per page must not be zero");
 				ctl.page_lines = num;
+				ctl.set_lines = true;
 				break;
 			case 'v':
 				puts(
@@ -113,7 +115,7 @@ int main(const int argc, char *argv[]) {
 
 	// stdout is a terminal -> get terminal capabilities
 	setupterm(NULL, STDOUT_FILENO, NULL);
-	if (!ctl.page_lines)
+	if (!ctl.set_lines)
 		ctl.page_lines = lines - 1;
 	ctl.key_up_len = strlen(key_up);
 	ctl.key_down_len = strlen(key_down);
@@ -138,6 +140,7 @@ int main(const int argc, char *argv[]) {
 	sigemptyset(&ctl.sigset);
 	sigaddset(&ctl.sigset, SIGINT);
 	sigaddset(&ctl.sigset, SIGQUIT);
+	sigaddset(&ctl.sigset, SIGWINCH);
 	if (sigprocmask(SIG_BLOCK, &ctl.sigset, NULL) < 0)
 		err(1, "Unable to listen for signals");
 	ctl.sigfd = signalfd(-1, &ctl.sigset, 0);
