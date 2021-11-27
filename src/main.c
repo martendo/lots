@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <term.h>
 #include <termios.h>
+#include <sys/signalfd.h>
 #include <err.h>
 #include <errno.h>
 #include <getopt.h>
@@ -17,20 +18,6 @@
 #define LOTS_HOME_PAGE "lots home page: <https://github.com/martendo/lots>"
 
 #define BUFFER_SIZE 1024
-
-static void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const ctl, const int status) {
-	// Clear status line
-	putchar('\r');
-	putp(clr_eol);
-
-	fflush(NULL);
-	if (ctl->file)
-		fclose(ctl->file);
-	del_curterm(cur_term);
-	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &ctl->oldattr) < 0)
-		err(1, "Failed to reset terminal attributes");
-	exit(status);
-}
 
 static void print_file(FILE *const file, const char *const filename) {
 	char buffer[BUFFER_SIZE];
@@ -147,6 +134,16 @@ int main(const int argc, char *argv[]) {
 	attr.c_cc[VTIME] = 0;
 	tcsetattr(STDOUT_FILENO, TCSANOW, &attr);
 
+	// Listen for signals
+	sigemptyset(&ctl.sigset);
+	sigaddset(&ctl.sigset, SIGINT);
+	sigaddset(&ctl.sigset, SIGQUIT);
+	if (sigprocmask(SIG_BLOCK, &ctl.sigset, NULL) < 0)
+		err(1, "Unable to listen for signals");
+	ctl.sigfd = signalfd(-1, &ctl.sigset, 0);
+	if (ctl.sigfd < 0)
+		err(1, "Unable to listen for signals");
+
 	// Get file list
 	ctl.file_count = argc - optind;
 	ctl.files = argv + optind;
@@ -171,6 +168,10 @@ int main(const int argc, char *argv[]) {
 
 	enum cmd command = CMD_UNKNOWN;
 	while (1) {
+		// Poll for signals and user input
+		if (lots_poll(&ctl) != 0)
+			continue;
+		// Read commands
 		command = getcmd(&ctl);
 		switch (command) {
 			case CMD_UNKNOWN:

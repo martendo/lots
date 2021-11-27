@@ -3,11 +3,15 @@
 
 #include <stdio.h>
 #include <termios.h>
+#include <signal.h>
 
 struct lotsctl {
 	struct termios oldattr; // Original terminal attributes
 
 	unsigned long page_lines; // Number of lines per page
+
+	sigset_t sigset; // Signals to listen for
+	int sigfd; // signalfd file descriptor
 
 	int file_count; // Number of files to display
 	char **files; // Filenames of files to display

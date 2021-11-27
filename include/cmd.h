@@ -17,6 +17,10 @@ enum cmd {
 	CMD_QUIT
 };
 
+void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const, const int);
+
+int lots_poll(const struct lotsctl *const);
+
 enum cmd getcmd(const struct lotsctl *const);
 
 #endif
