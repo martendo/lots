@@ -107,10 +107,8 @@ void redraw(struct lotsctl *const ctl) {
 // current file position, seeking backwards
 int seek_line(struct lotsctl *const ctl, unsigned long target) {
 	// Seek to beginning of file
-	if (fseeko(ctl->file, 0, SEEK_SET) < 0) {
-		status_printf(ctl, "Can't seek file");
+	if (fseeko(ctl->file, 0, SEEK_SET) < 0)
 		return 1;
-	}
 	ctl->line = target;
 	if (target == 0)
 		return 0;
@@ -131,8 +129,10 @@ void move_backwards(struct lotsctl *const ctl, const unsigned long nlines) {
 	// underflow occurred
 	if (target >= ctl->line)
 		target = 0;
-	if (seek_line(ctl, target) != 0)
+	if (seek_line(ctl, target) != 0) {
+		status_printf(ctl, "Can't seek file");
 		return;
+	}
 	redraw(ctl);
 }
 
