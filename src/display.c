@@ -22,11 +22,11 @@ void print_status(const struct lotsctl *const ctl) {
 	if (ctl->file_size) {
 		unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
 		if (percent < 100)
-			printf(" line %u (%u%%)", ctl->line, percent);
+			printf(" line %lu (%u%%)", ctl->line, percent);
 		else
 			fputs(" (END)", stdout);
 	} else {
-		printf(" line %u", ctl->line);
+		printf(" line %lu", ctl->line);
 	}
 	putp(exit_attribute_mode);
 	putp(clr_eol);
