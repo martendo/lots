@@ -202,6 +202,10 @@ int main(const int argc, char *argv[]) {
 				break;
 			// Jump (really "move") to end of file
 			case CMD_END:
+				// Clear status line
+				putchar('\r');
+				putp(clr_eol);
+				// Print until EOF is reached
 				char buffer[BUFFER_SIZE];
 				while (fgets(buffer, sizeof(buffer), ctl.file)) {
 					fputs(buffer, stdout);
