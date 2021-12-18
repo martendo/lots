@@ -1,7 +1,7 @@
 .SUFFIXES:
 
 CFLAGS ?= -Wall -Wextra -O3 -flto
-LDFLAGS ?= -lncurses
+LDLIBS := -lncurses
 
 SRCS = $(wildcard src/*.c)
 
@@ -17,12 +17,12 @@ clean:
 # Link objects into the final executable
 lots: $(patsubst src/%.c,obj/%.o,$(SRCS))
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 # Compile C source files to object files and create dependency files
 obj/%.o dep/%.d: src/%.c
 	@mkdir -p obj/$(*D) dep/$(*D)
-	$(CC) $(CFLAGS) -I include -MMD -MP -MQ obj/$*.o -MQ dep/$*.d -MF dep/$*.d -c $< -o obj/$*.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I include -MMD -MP -MQ obj/$*.o -MQ dep/$*.d -MF dep/$*.d -c -o obj/$*.o $<
 
 # Include dependencies except if cleaning
 ifneq ($(MAKECMDGOALS),clean)
