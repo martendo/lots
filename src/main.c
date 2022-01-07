@@ -71,7 +71,7 @@ int main(const int argc, char *argv[]) {
 				if (endstr == optarg || *endstr != '\0')
 					errx(1, "Not a valid integer \"%s\"", optarg);
 				// Don't accept zero
-				if (!num)
+				if (num == 0)
 					errx(1, "Lines per page must not be zero");
 				ctl.page_lines = num;
 				ctl.set_lines = true;

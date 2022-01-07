@@ -18,7 +18,7 @@ void print_status(const struct lotsctl *const ctl) {
 	if (ctl->file_count > 1 && ctl->file_index >= 0)
 		printf(" (file %d of %d)", ctl->file_index + 1, ctl->file_count);
 	else if (ctl->file_count > 0 && ctl->file_index == -1)
-		printf(" (%d file%s next)", ctl->file_count, ctl->file_count - 1 ? "s" : "");
+		printf(" (%d file%s next)", ctl->file_count, ctl->file_count == 1 ? "" : "s");
 	if (ctl->file_size) {
 		unsigned int percent = ctl->file_pos * 100 / ctl->file_size;
 		if (percent < 100)
@@ -42,6 +42,7 @@ static inline void wait_key(void) {
 void status_printf(const struct lotsctl *const ctl, const char *const fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
+	// Don't do anything special if not in file-viewing mode
 	if (!ctl->file) {
 		vprintf(fmt, args);
 		putchar('\n');
@@ -67,7 +68,7 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 
 	// Print nlines lines from file
 	char buffer[BUFFER_SIZE];
-	while (fgets(buffer, sizeof(buffer), ctl->file)) {
+	while (nlines > 0 && fgets(buffer, sizeof(buffer), ctl->file)) {
 		// Remove trailing newline, if any, so that the rest of the line
 		// may be cleared before moving on to the next
 		size_t len = strcspn(buffer, "\n");
@@ -81,8 +82,7 @@ void move_forwards(struct lotsctl *const ctl, unsigned long nlines) {
 			putchar('\n');
 			putp(clr_eol);
 			ctl->line++;
-			if (!--nlines)
-				break;
+			nlines--;
 		}
 	}
 	ctl->file_pos = ftello(ctl->file);
@@ -113,11 +113,9 @@ int seek_line(struct lotsctl *const ctl, unsigned long target) {
 	if (target == 0)
 		return 0;
 	char buffer[BUFFER_SIZE];
-	while (fgets(buffer, sizeof(buffer), ctl->file)) {
-		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1) {
-			if (!--target)
-				break;
-		}
+	while (target > 0 && fgets(buffer, sizeof(buffer), ctl->file)) {
+		if (strcspn(buffer, "\n") < BUFFER_SIZE - 1)
+			target--;
 	}
 	return 0;
 }

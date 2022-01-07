@@ -63,7 +63,7 @@ int lots_poll(struct lotsctl *const ctl) {
 		}
 	}
 	// Don't try to read commands if no user input was received
-	if (!pfd[1].revents)
+	if (pfd[1].revents == 0)
 		return 1;
 	// There was user input -> read commands
 	return 0;
