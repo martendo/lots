@@ -140,9 +140,12 @@ static void remove_file(struct lotsctl *const ctl) {
 	// Shift all file pointers following the current one down one spot
 	for (int i = ctl->file_index; i < ctl->file_count - 1; i++)
 		ctl->files[i] = ctl->files[i + 1];
-	// Update file count and current index
+	// Adjust file count and current index
 	ctl->file_count--;
 	ctl->file_index--;
+	// Update displayed file index if in file-viewing mode
+	if (ctl->file)
+		print_status(ctl);
 }
 
 int display_file(struct lotsctl *const ctl, const int inc) {
