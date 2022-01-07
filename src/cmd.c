@@ -19,7 +19,7 @@ void __attribute__ ((noreturn)) lots_exit(const struct lotsctl *const ctl, const
 	if (ctl->file)
 		fclose(ctl->file);
 	del_curterm(cur_term);
-	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &ctl->oldattr) < 0)
+	if (tcsetattr(STDOUT_FILENO, TCSAFLUSH, &ctl->oldattr) == -1)
 		err(1, "Failed to reset terminal attributes");
 	exit(status);
 }
@@ -31,7 +31,7 @@ int lots_poll(struct lotsctl *const ctl) {
 	pfd[0].events = POLLIN | POLLERR | POLLHUP;
 	pfd[1].fd = STDOUT_FILENO;
 	pfd[1].events = POLLIN;
-	if (poll(pfd, sizeof(pfd), -1) < 0)
+	if (poll(pfd, sizeof(pfd), -1) == -1)
 		return 1;
 	// Handle input
 	if (pfd[0].revents) {

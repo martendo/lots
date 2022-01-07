@@ -125,7 +125,7 @@ int main(const int argc, char *argv[]) {
 	ctl.key_end_len = strlen(key_end);
 
 	// Modify terminal attributes
-	if (tcgetattr(STDIN_FILENO, &ctl.oldattr) < 0 && tcgetattr(STDOUT_FILENO, &ctl.oldattr) < 0)
+	if (tcgetattr(STDIN_FILENO, &ctl.oldattr) == -1 && tcgetattr(STDOUT_FILENO, &ctl.oldattr) == -1)
 		err(1, "Failed to get terminal attributes");
 	struct termios attr = ctl.oldattr;
 	// Enter noncanonical mode to recieve character inputs immediately
@@ -141,10 +141,10 @@ int main(const int argc, char *argv[]) {
 	sigaddset(&ctl.sigset, SIGINT);
 	sigaddset(&ctl.sigset, SIGQUIT);
 	sigaddset(&ctl.sigset, SIGWINCH);
-	if (sigprocmask(SIG_BLOCK, &ctl.sigset, NULL) < 0)
+	if (sigprocmask(SIG_BLOCK, &ctl.sigset, NULL) == -1)
 		err(1, "Unable to listen for signals");
 	ctl.sigfd = signalfd(-1, &ctl.sigset, 0);
-	if (ctl.sigfd < 0)
+	if (ctl.sigfd == -1)
 		err(1, "Unable to listen for signals");
 
 	// Get file list
@@ -164,7 +164,7 @@ int main(const int argc, char *argv[]) {
 		// Print screenful of content
 		move_forwards(&ctl, lines - 1);
 	} else {
-		if (!display_file(&ctl, 1))
+		if (display_file(&ctl, 1) == -1)
 			// No files could be displayed
 			lots_exit(&ctl, 1);
 	}
@@ -197,7 +197,7 @@ int main(const int argc, char *argv[]) {
 				break;
 			// Jump to beginning of file
 			case CMD_HOME:
-				if (fseeko(ctl.file, 0, SEEK_SET) < 0) {
+				if (fseeko(ctl.file, 0, SEEK_SET) == -1) {
 					status_printf(&ctl, "Can't seek file");
 					break;
 				}

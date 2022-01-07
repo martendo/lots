@@ -107,8 +107,8 @@ void redraw(struct lotsctl *const ctl) {
 // current file position, seeking backwards
 int seek_line(struct lotsctl *const ctl, unsigned long target) {
 	// Seek to beginning of file
-	if (fseeko(ctl->file, 0, SEEK_SET) < 0)
-		return 1;
+	if (fseeko(ctl->file, 0, SEEK_SET) == -1)
+		return -1;
 	ctl->line = target;
 	if (target == 0)
 		return 0;
@@ -163,7 +163,7 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 
 		// Get file information
 		struct stat st;
-		if (fstat(fileno(file), &st) < 0) {
+		if (fstat(fileno(file), &st) == -1) {
 			status_printf(ctl, "Could not stat file \"%s\": %s", filename, strerror(errno));
 			fclose(file);
 			remove_file(ctl);
@@ -191,9 +191,9 @@ int display_file(struct lotsctl *const ctl, const int inc) {
 		ctl->file_size = st.st_size;
 
 		redraw(ctl);
-		return 1;
+		return 0;
 	} while ((ctl->file_index += inc) < ctl->file_count);
-	return 0;
+	return -1;
 }
 
 void switch_file(struct lotsctl *const ctl, const int offset) {
@@ -208,7 +208,7 @@ void switch_file(struct lotsctl *const ctl, const int offset) {
 	FILE *const prev_file = ctl->file;
 	// Keep walking the file list in the direction of offset if some
 	// files need to be skipped
-	if (display_file(ctl, (offset > 0) - (offset < 0)))
+	if (display_file(ctl, (offset > 0) - (offset < 0)) == 0)
 		// File has been successfully switched -> close previous file
 		fclose(prev_file);
 }
