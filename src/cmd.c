@@ -36,7 +36,7 @@ int lots_poll(struct lotsctl *const ctl) {
 	// Handle input
 	if (pfd[0].revents) {
 		struct signalfd_siginfo siginfo;
-		size_t len = read(pfd[0].fd, &siginfo, sizeof(struct signalfd_siginfo));
+		ssize_t len = read(pfd[0].fd, &siginfo, sizeof(struct signalfd_siginfo));
 		if (len != sizeof(struct signalfd_siginfo))
 			return 1;
 		switch (siginfo.ssi_signo) {
